@@ -5,5 +5,5 @@ from domain.models import InternalRequest, InternalResponse
 
 class IProvider(ABC):
     @abstractmethod
-    def send_completion_request(self, request: InternalRequest) -> InternalResponse:
+    def generate_completion(self, request: InternalRequest) -> InternalResponse:
         pass
