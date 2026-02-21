@@ -42,7 +42,7 @@ class InternalRequest(BaseModel):
 class InternalResponse(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     service_info: ServiceInformation
-    message: Message  # TODO: research and check if we wanted to send system instructions (as system) and user prompt (as user), how many responses will be sent? -> use List or not
+    generated_message: Message  # TODO: research and check if we wanted to send system instructions (as system) and user prompt (as user), how many responses will be sent? -> use List or not
     created: int = Field(default_factory=lambda: int(time()))
     usage: UsageStats | None = None
 
