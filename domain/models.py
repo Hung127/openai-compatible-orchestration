@@ -40,12 +40,20 @@ class InternalRequest(BaseModel):
     top_p: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
+class FinishReason(str, Enum):
+    STOP = "stop"
+    LENGTH = "length"
+    CONTENT_FILTER = "content_filter"
+    TOOL_CALLS = "tool_calls"
+
+
 class InternalResponse(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     service_info: ServiceInformation
     generated_message: Message  # TODO: research and check if we wanted to send system instructions (as system) and user prompt (as user), how many responses will be sent? -> use List or not
     created: int = Field(default_factory=lambda: int(time()))
-    usage: UsageStats | None = None
+    usage: UsageStats
+    finish_reason: FinishReason = FinishReason.STOP
 
 
 # the flow: ClientRequest -> Controller (at outer layer) convert that into InternalRequest (now we do something, like adding memory, some prompt engineering...) -> (Presenter) convert InternalRequest into ServiceRequest (like Ollama or so) -> send -> receive ServiceResponse -> convert to InternalResponse (Controller) -> now do some stuffs with the InternalResponse if we want to -> convert to OpenAIResponse or whatever client wants to (Presenter) -> send to client, I will need to do some dependency injection
