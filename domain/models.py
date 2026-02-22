@@ -32,6 +32,7 @@ class UsageStats(BaseModel):
 
 
 class InternalRequest(BaseModel):
+    model: str
     messages: List[Message]
     max_tokens: int
     # TODO: move the default away from this layer (phase 2)
