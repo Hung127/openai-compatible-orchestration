@@ -12,7 +12,7 @@ class Internal2OpenAIConverter(IOutConverter[OpenAIResponse]):
 
     def to_openai_usage_stats(
         self, internal_usage_stats: UsageStats
-    ) -> OpenAIUsageStats | None:
+    ) -> OpenAIUsageStats:
         return OpenAIUsageStats(
             prompt_tokens=internal_usage_stats.prompt_tokens,
             completion_tokens=internal_usage_stats.completion_tokens,
