@@ -10,7 +10,7 @@ from domain.models import InternalResponse, Message, UsageStats
 
 class Internal2OpenAIConverter(IOutConverter[OpenAIResponse]):
 
-    def to_openai_usage_stats(
+    def _to_openai_usage_stats(
         self, internal_usage_stats: UsageStats
     ) -> OpenAIUsageStats:
         return OpenAIUsageStats(
@@ -19,9 +19,9 @@ class Internal2OpenAIConverter(IOutConverter[OpenAIResponse]):
             total_tokens=internal_usage_stats.total_tokens,
         )
 
-    def to_openai_message(self, internal_message: Message) -> OpenAIMessage:
+    def _to_openai_message(self, internal_message: Message) -> OpenAIMessage:
         return OpenAIMessage(
-            role=internal_message.role,
+            role=internal_message.role.value,
             content=internal_message.content,
         )
 
@@ -29,7 +29,7 @@ class Internal2OpenAIConverter(IOutConverter[OpenAIResponse]):
         response_id = response.id
         model = response.service_info.model
         created = response.created
-        generated_message = self.to_openai_message(response.generated_message)
+        generated_message = self._to_openai_message(response.generated_message)
         choices = [
             OpenAIChoice(
                 index=0,
@@ -38,7 +38,7 @@ class Internal2OpenAIConverter(IOutConverter[OpenAIResponse]):
             )
         ]
 
-        usage = self.to_openai_usage_stats(response.usage)
+        usage = self._to_openai_usage_stats(response.usage)
         openai_response = OpenAIResponse(
             id=response_id, model=model, created=created, choices=choices, usage=usage
         )

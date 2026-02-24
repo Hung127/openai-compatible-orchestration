@@ -1,19 +1,21 @@
-from typing import List
+from typing import List, Literal
 
 from pydantic import BaseModel
 
-from domain.models import FinishReason, Role
+from domain.models import FinishReason
+
+OpenAIRole = Literal["system", "user", "assistant"]
 
 
 class OpenAIMessage(BaseModel):
-    role: Role
+    role: OpenAIRole
     content: str
 
 
 class OpenAIRequest(BaseModel):
     model: str
     messages: List[OpenAIMessage]
-    max_tokens: int | None = None
+    max_tokens: int
     temperature: float = 1.0
     top_p: float = 1.0
 

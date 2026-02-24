@@ -16,3 +16,7 @@ class IInConverter(ABC, Generic[TRequest]):
     @abstractmethod
     def to_internal_request(self, request: TRequest) -> InternalRequest:
         pass
+
+    @abstractmethod
+    def to_external_request(self, request: InternalRequest) -> TRequest:
+        pass
