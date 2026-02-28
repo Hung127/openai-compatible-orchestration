@@ -5,6 +5,7 @@ from domain.models import InternalResponse
 
 TResponse = TypeVar("TResponse")
 
+
 class IOutConverter(ABC, Generic[TResponse]):
     """
     This is a 'out' converter (internal -> external) allows internal response to be converted to external response.
@@ -17,5 +18,7 @@ class IOutConverter(ABC, Generic[TResponse]):
         pass
 
     @abstractmethod
-    def to_internal_response(self, response: TResponse) -> InternalResponse:
+    def to_internal_response(
+        self, response: TResponse, provider: str ="unknown"
+    ) -> InternalResponse:
         pass

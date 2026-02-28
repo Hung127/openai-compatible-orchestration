@@ -57,13 +57,15 @@ class Internal2OpenAIConverter(IOutConverter[OpenAIResponse]):
 
         return openai_response
 
-    def to_internal_response(self, response: OpenAIResponse) -> InternalResponse:
+    def to_internal_response(
+        self, response: OpenAIResponse, provider: str = "unknown"
+    ) -> InternalResponse:
         if not response.choices:
             raise ValueError("OpenAI response must contain at least one choice")
 
         return InternalResponse(
             id=response.id,
-            service_info=ServiceInformation(model=response.model),
+            service_info=ServiceInformation(model=response.model, provider=provider),
             created=response.created,
             usage=(
                 self._to_internal_usage_stats(response.usage)

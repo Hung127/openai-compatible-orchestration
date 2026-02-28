@@ -1,5 +1,4 @@
-from controllers.interfaces.i_in_converter import IInConverter
-
+from adapters.controllers.interfaces.i_in_converter import IInConverter
 from adapters.openai_schema import OpenAIMessage, OpenAIRequest
 from domain.models import InternalRequest, Message, Role
 

@@ -42,4 +42,6 @@ class OllamaProvider(IProvider):
 
         openai_response = OpenAIResponse.model_validate(chat_completion.model_dump())
 
-        return self.out_converter.to_internal_response(openai_response)
+        return self.out_converter.to_internal_response(
+            openai_response, provider="ollama"
+        )
