@@ -21,7 +21,7 @@ class Message(BaseModel):
 
 
 class ServiceInformation(BaseModel):
-    provider: str  # "ollama"
+    provider: str = "unknown"  # "ollama"
     model: str  # gpt20b...
 
 
@@ -52,7 +52,7 @@ class InternalResponse(BaseModel):
     service_info: ServiceInformation
     generated_message: Message  # TODO: research and check if we wanted to send system instructions (as system) and user prompt (as user), how many responses will be sent? -> use List or not
     created: int = Field(default_factory=lambda: int(time()))
-    usage: UsageStats
+    usage: UsageStats | None
     finish_reason: FinishReason = FinishReason.STOP
 
 

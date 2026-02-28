@@ -12,28 +12,12 @@ class OpenAI2InternalInConverter(IInConverter[OpenAIRequest]):
     """
 
     def _to_internal_message(self, message: OpenAIMessage):
-        internal_message = Message(role=Role[message.role], content=message.content)
+        internal_message = Message(role=Role(message.role), content=message.content)
         return internal_message
 
     def to_internal_request(self, request) -> InternalRequest:
-        # model = request.model
-        # external_messages = request.messages
-        # max_tokens = request.max_tokens
-        # temperature = request.temperature
-        # top_p = request.top_p
-        # internal_messages = list()
 
-        # for msg in external_messages:
-        #     internal_messages.append(self.to_internal_message(msg))
-
-        internal_request = InternalRequest.model_validate(
-            # messages=internal_messages,
-            # max_tokens=max_tokens,
-            # temperature=temperature,
-            # top_p=top_p,
-            # model=model,
-            request.model_dump()
-        )
+        internal_request = InternalRequest.model_validate(request.model_dump())
 
         return internal_request
 
