@@ -1,19 +1,28 @@
+# openai-compatible-orchestration
+
+## Introduction
+
+Hello, world! This is a repo that provide a super simple proxy (for now)
+ to forward openai request and response.  
+This is my exercise to enrich my knowledge in Python,
+ [FastAPI](https://fastapi.tiangolo.com/learn/), [OpenAI-compatible API](https://developers.openai.com/api/reference/overview) and [The Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
+
+---
+
+## File structure
+
 ```txt
 .
 ├── adapters
 │   ├── controllers
 │   │   ├── external_to_internal_openai.py
 │   │   └── interfaces
-│   │       ├── i_in_converter.py
-│   │       └── __pycache__
-│   │           └── i_in_converter.cpython-313.pyc
+│   │       └── i_in_converter.py
 │   ├── gateways
 │   ├── openai_schema.py
 │   └── presenters
 │       ├── interfaces
-│       │   ├── i_out_converter.py
-│       │   └── __pycache__
-│       │       └── i_out_converter.cpython-313.pyc
+│       │   └── i_out_converter.py
 │       └── internal_to_external_openai.py
 ├── dependencies.py
 ├── domain
@@ -24,9 +33,6 @@
 │   └── providers
 │       └── ollama.py
 ├── main.py
-├── __pycache__
-│   ├── dependencies.cpython-313.pyc
-│   └── main.cpython-313.pyc
 ├── README.md
 ├── requirements.txt
 └── use_cases
@@ -34,5 +40,6 @@
     └── interfaces
         └── i_generate_text_completion.py
 
-16 directories, 18 files
+13 directories, 14 files
+
 ```
