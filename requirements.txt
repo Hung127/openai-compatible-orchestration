@@ -1,2 +1,6 @@
 fastapi[standard]
+uvicorn
 pydantic
+openai
+pytest
+httpx

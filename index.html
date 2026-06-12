@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OpenAI-Compatible Test UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    textarea, input, button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 120px;
+    }
+
+    button {
+      cursor: pointer;
+      background: #111827;
+      color: white;
+      border: none;
+      margin-top: 16px;
+    }
+
+    pre {
+      background: #f3f4f6;
+      padding: 16px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat Completion Tester</h1>
+
+  <label>Backend URL</label>
+  <input id="baseUrl" value="http://localhost:8000" />
+
+  <label>Model</label>
+  <input id="model" value="gemma3:270m" />
+
+  <label>Message</label>
+  <textarea id="message">Hello, explain Python in one sentence.</textarea>
+
+  <button onclick="sendMessage()">Send</button>
+
+  <h2>Response</h2>
+  <pre id="output">Waiting...</pre>
+
+  <script>
+    async function sendMessage() {
+      const baseUrl = document.getElementById("baseUrl").value;
+      const model = document.getElementById("model").value;
+      const message = document.getElementById("message").value;
+      const output = document.getElementById("output");
+
+      output.textContent = "Loading...";
+
+      try {
+        const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: "user",
+                content: message
+              }
+            ],
+            max_tokens: 200,
+            temperature: 0.7,
+            top_p: 1.0
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          output.textContent = JSON.stringify(data, null, 2);
+          return;
+        }
+
+        output.textContent =
+          data.choices?.[0]?.message?.content ||
+          JSON.stringify(data, null, 2);
+
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
