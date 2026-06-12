@@ -6,6 +6,14 @@ from use_cases.generate_text_completion import GenerateTextCompletionUseCase
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/v1/chat/completions")
 def completions(
