@@ -1,103 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>OpenAI-Compatible Test UI</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 16px;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM Chat & Syntax Tester</title>
 
-    textarea, input, button {
-      width: 100%;
-      margin-top: 8px;
-      padding: 10px;
-      font-size: 14px;
-    }
+    <!-- 1. Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    textarea {
-      min-height: 120px;
-    }
+    <!-- 2. HTML Sanitizer -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 
-    button {
-      cursor: pointer;
-      background: #111827;
-      color: white;
-      border: none;
-      margin-top: 16px;
-    }
+    <!-- 3. Syntax Highlighting (Theme: Atom One Dark) -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
-    pre {
-      background: #f3f4f6;
-      padding: 16px;
-      white-space: pre-wrap;
-    }
-  </style>
-</head>
-<body>
-  <h1>Chat Completion Tester</h1>
-
-  <label>Backend URL</label>
-  <input id="baseUrl" value="http://localhost:8000" />
-
-  <label>Model</label>
-  <input id="model" value="gemma3:270m" />
-
-  <label>Message</label>
-  <textarea id="message">Hello, explain Python in one sentence.</textarea>
-
-  <button onclick="sendMessage()">Send</button>
-
-  <h2>Response</h2>
-  <pre id="output">Waiting...</pre>
-
-  <script>
-    async function sendMessage() {
-      const baseUrl = document.getElementById("baseUrl").value;
-      const model = document.getElementById("model").value;
-      const message = document.getElementById("message").value;
-      const output = document.getElementById("output");
-
-      output.textContent = "Loading...";
-
-      try {
-        const res = await fetch(`${baseUrl}/v1/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              {
-                role: "user",
-                content: message
-              }
-            ],
-            max_tokens: 200,
-            temperature: 0.7,
-            top_p: 1.0
-          })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          output.textContent = JSON.stringify(data, null, 2);
-          return;
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        output.textContent =
-          data.choices?.[0]?.message?.content ||
-          JSON.stringify(data, null, 2);
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
 
-      } catch (err) {
-        output.textContent = "Error: " + err.message;
-      }
-    }
-  </script>
+        header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Main Container */
+        main {
+            display: grid;
+            gap: 24px;
+        }
+
+        /* Configuration Card */
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+            /* Fix padding issues */
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status & Error Messages */
+        #status-area {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            min-height: 20px;
+        }
+
+        .error-msg {
+            color: #dc2626;
+            background: #fee2e2;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .loading-msg {
+            color: var(--primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Output Area Styling */
+        #output {
+            margin-top: 20px;
+            min-height: 100px;
+            word-wrap: break-word;
+        }
+
+        /* Markdown Content Styling */
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .markdown-body p {
+            margin-bottom: 16px;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            padding-left: 2em;
+            margin-bottom: 16px;
+        }
+
+        .markdown-body blockquote {
+            padding: 0 1em;
+            color: var(--text-muted);
+            border-left: 0.25em solid var(--border-color);
+            margin: 0 0 16px 0;
+        }
+
+        /* Code Block Styling */
+        .markdown-body pre {
+            background: #282c34 !important;
+            /* Fallback */
+            margin: 0 0 16px 0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .markdown-body code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.9em;
+        }
+
+        /* Inline code */
+        .markdown-body p code,
+        .markdown-body li code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>LLM Chat Tester</h1>
+        <div class="subtitle">Test your local or remote LLM API with Markdown & Syntax Highlighting</div>
+    </header>
+
+    <main>
+        <!-- Configuration & Input Section -->
+        <section class="card">
+            <div class="config-grid">
+                <div>
+                    <label for="baseUrl">Base URL</label>
+                    <input type="text" id="baseUrl" placeholder="http://localhost:11434" />
+                </div>
+                <div>
+                    <label for="model">Model Name</label>
+                    <input type="text" id="model" placeholder="e.g. llama3" />
+                </div>
+            </div>
+
+            <label for="message">Message Prompt</label>
+            <textarea id="message" placeholder="Ask for code, explanations, or translations..."></textarea>
+
+            <div style="margin-top: 16px;">
+                <button id="sendBtn" onclick="sendMessage()">Send Request</button>
+            </div>
+
+            <div id="status-area"></div>
+        </section>
+
+        <!-- Output Section -->
+        <section class="card">
+            <label>Response Output</label>
+            <div id="output" class="markdown-body">
+                <p style="color: var(--text-muted); font-style: italic;">Waiting for input...</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Load saved settings on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('llm_baseUrl');
+            const savedModel = localStorage.getItem('llm_model');
+
+            if (savedUrl) document.getElementById('baseUrl').value = savedUrl;
+            if (savedModel) document.getElementById('model').value = savedModel;
+        });
+
+        async function sendMessage() {
+            const baseUrlInput = document.getElementById("baseUrl");
+            const modelInput = document.getElementById("model");
+            const messageInput = document.getElementById("message");
+            const output = document.getElementById("output");
+            const statusArea = document.getElementById("status-area");
+            const sendBtn = document.getElementById("sendBtn");
+
+            const baseUrl = baseUrlInput.value.trim();
+            const model = modelInput.value.trim();
+            const message = messageInput.value.trim();
+
+            if (!baseUrl || !model || !message) {
+                showStatus("Please fill in all fields (Base URL, Model, and Message).", "error");
+                return;
+            }
+
+            // Save settings for next time
+            localStorage.setItem('llm_baseUrl', baseUrl);
+            localStorage.setItem('llm_model', model);
+
+            // UI Loading State
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Generating...";
+            output.innerHTML = '<p class="loading-msg">Thinking...</p>';
+            statusArea.innerHTML = "";
+
+            try {
+                // Ensure URL doesn't have double slashes or missing protocol
+                const endpoint = baseUrl.replace(/\/+$/, '') + '/v1/chat/completions';
+
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{role: "user", content: message}],
+                        max_tokens: 2000, // Increased limit for better code demos
+                        temperature: 0.3,
+                        top_p: 1.0
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = `Server Error: ${response.status} ${response.statusText}`;
+                    throw new Error(errorText);
+                }
+
+                const data = await response.json();
+
+                // Handle potential variations in API response structure
+                const content = data?.choices?.[0]?.message?.content || data?.content || "";
+
+                if (!content) {
+                    throw new Error("Received empty content from API.");
+                }
+
+                renderOutput(content);
+                showStatus("Response received successfully.", "success");
+
+            } catch (error) {
+                console.error(error);
+                output.innerHTML = `<div class="error-msg"><strong>Error:</strong> ${error.message}</div>`;
+                showStatus("Request failed.", "error");
+            } finally {
+                // Reset UI State
+                sendBtn.disabled = false;
+                sendBtn.textContent = "Send Request";
+            }
+        }
+
+        function renderOutput(markdownContent) {
+            const output = document.getElementById("output");
+
+            // Step 1: Parse Markdown to HTML
+            const rawHtml = marked.parse(markdownContent);
+
+            // Step 2: Sanitize HTML to prevent XSS
+            const cleanHtml = DOMPurify.sanitize(rawHtml);
+
+            // Step 3: Render to DOM
+            output.innerHTML = cleanHtml;
+
+            // Step 4: Apply Syntax Highlighting
+            // We look for <pre><code> blocks created by Marked.js
+            output.querySelectorAll('pre code').forEach((block) => {
+                // highlightElement automatically detects language if class is present
+                hljs.highlightElement(block);
+            });
+        }
+
+        function showStatus(message, type) {
+            const statusArea = document.getElementById("status-area");
+            if (type === "error") {
+                statusArea.innerHTML = `<span class="error-msg">${message}</span>`;
+            } else {
+                statusArea.innerHTML = `<span class="loading-msg" style="color: green;">✓ ${message}</span>`;
+                // Clear success message after 3 seconds
+                setTimeout(() => statusArea.innerHTML = "", 3000);
+            }
+        }
+    </script>
+
 </body>
+
 </html>
