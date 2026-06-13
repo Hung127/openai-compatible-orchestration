@@ -1,5 +1,7 @@
+import os
 from typing import cast
 
+from dotenv import load_dotenv
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
@@ -17,9 +19,14 @@ class OllamaProvider(IProvider):
         in_converter: IInConverter[OpenAIRequest],
         out_converter: IOutConverter[OpenAIResponse],
     ):
+        # self.client = OpenAI(
+        #     base_url=base_url,
+        #     api_key="ollama",  # required but ignored
+        # )
+        load_dotenv()
         self.client = OpenAI(
             base_url=base_url,
-            api_key="ollama",  # required but ignored
+            api_key=os.getenv("OLLAMA_API_KEY"),
         )
         self.in_converter = in_converter
         self.out_converter = out_converter
@@ -39,6 +46,7 @@ class OllamaProvider(IProvider):
             max_tokens=openai_request.max_tokens,
             temperature=openai_request.temperature,
         )
+        print(chat_completion.model_dump())
 
         openai_response = OpenAIResponse.model_validate(chat_completion.model_dump())
 
