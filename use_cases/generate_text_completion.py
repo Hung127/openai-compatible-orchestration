@@ -1,7 +1,7 @@
 from infrastructure.interfaces.i_provider import IProvider
 from use_cases.interfaces.i_generate_text_completion import (
     IGenerateTextCompletionUseCase, InternalRequest, InternalResponse)
-from use_cases.interfaces.i_context_pipeline import IContextPipeline
+from use_cases.interfaces.context.i_context_pipeline import IContextPipeline
 
 
 class GenerateTextCompletionUseCase(IGenerateTextCompletionUseCase):
